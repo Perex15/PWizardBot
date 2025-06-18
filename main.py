@@ -104,12 +104,12 @@ def country(update: Update, context: CallbackContext):
 
 def fake_user(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
-    response = requests.get("https://randomuser.me/api/").json()['results'][0]
-    name = response['name']
-    update.message.reply_text(
-        f"👤 {name['title']} {name['first']} {name['last']}\n📧 {response['email']}\n🌍 {response['location']['country']}",
-        parse_mode='Markdown'
-    )
+    response = requests.get("https://fakestoreapi.com/users/1").json()
+name = response['name']
+update.message.reply_text(
+    f"👤 {name['firstname']} {name['lastname']}\n📧 {response['email']}\n🏙️ {response['address']['city']}",
+    parse_mode='Markdown'
+        )
 
 # ======================== MENU ========================
 
