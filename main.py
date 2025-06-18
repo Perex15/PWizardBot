@@ -134,7 +134,7 @@ def country(update: Update, context: CallbackContext):
 def fake_user(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
     try:
-        response = requests.get("https://randomuser.me/api/").json()['data'][0]
+        response = requests.get("https://randomuser.me/api/").json()['results'][0]
         name = response['name']
         location = response['location']
         update.message.reply_text(
