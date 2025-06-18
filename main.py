@@ -77,9 +77,11 @@ def dog_pic(update: Update, context: CallbackContext):
 
 def bored(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
-    response = requests.get("https://www.boredapi.com/api/activity").json()
-    update.message.reply_text(f"🎲 Try this: {response['activity']}")
-
+    try:
+        response = requests.get("https://www.boredapi.com/api/activity").json()
+        update.message.reply_text(f"🎲 Try this: {response['activity']}")
+    except:
+        update.message.reply_text("😞 Couldn't fetch an activity right now. Try again later.")
 def quote(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
     response = requests.get("https://zenquotes.io/api/random").json()
