@@ -14,7 +14,7 @@ from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQuery
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-======================== BOT COMMANDS ==========================
+#======================== BOT COMMANDS ==========================
 
 WELCOME_MESSAGE = """ 🤖 Welcome to PWizard Bot! """
 
@@ -32,7 +32,7 @@ Here’s a list of things I can do:
 
 You can also tap the buttons in the menu! """
 
-======================== HANDLERS ============================
+#======================== HANDLERS ============================
 
 def send_typing_action(context: CallbackContext, chat_id: int): context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING) time.sleep(1)
 
@@ -54,13 +54,13 @@ def country(update: Update, context: CallbackContext): send_typing_action(contex
 
 def fake_user(update: Update, context: CallbackContext): send_typing_action(context, update.effective_chat.id) response = requests.get("https://randomuser.me/api/").json()['results'][0] name = response['name'] update.message.reply_text( f"👤 {name['title']} {name['first']} {name['last']}\n📧 {response['email']}\n🌍 {response['location']['country']}", parse_mode='Markdown')
 
-======================== MENU SYSTEM ==========================
+#======================== MENU SYSTEM ==========================
 
 def main_menu(): keyboard = [ [InlineKeyboardButton("🐱 Cat Fact", callback_data='catfact'), InlineKeyboardButton("🐶 Dog", callback_data='dog')], [InlineKeyboardButton("🎲 Bored", callback_data='bored'), InlineKeyboardButton("💬 Quote", callback_data='quote')], [InlineKeyboardButton("🎮 Pokémon", callback_data='poke'), InlineKeyboardButton("🌍 Country Info", callback_data='country')], [InlineKeyboardButton("👤 Fake User", callback_data='user')], ] return InlineKeyboardMarkup(keyboard)
 
 def button_handler(update: Update, context: CallbackContext): query = update.callback_query query.answer() dummy_update = Update(update.update_id, message=query.message) dummy_context = CallbackContext.from_update(dummy_update, context.dispatcher) command_map = { 'catfact': cat_fact, 'dog': dog_pic, 'bored': bored, 'quote': quote, 'poke': poke, 'country': lambda u, c: u.message.reply_text("🌍 Use /country <name> to get info."), 'user': fake_user } if query.data in command_map: command_map[query.data](dummy_update, dummy_context)
 
-======================== MAIN BOT =============================
+#======================== MAIN BOT =============================
 
 def main(): # Replace '8185936093:AAFeVtgngoz_fKo0a6LY-tYl8s4x6qlKFnU' with your actual bot token updater = Updater("8185936093:AAFeVtgngoz_fKo0a6LY-tYl8s4x6qlKFnU") dp = updater.dispatcher
 
