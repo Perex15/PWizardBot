@@ -2,9 +2,8 @@ import os
 import time
 import logging
 import requests
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import ChatAction
+from telegram.constants import ChatAction
 from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler
 
 # ======================== CONFIG ========================
@@ -12,8 +11,15 @@ from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQuery
 # Token from environment variable or hardcoded
 TOKEN = os.getenv("TOKEN", "8185936093:AAFeVtgngoz_fKo0a6LY-tYl8s4x6qlKFnU")
 
-# Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+# Logging to file and console
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("bot.log"),
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
 
 # ======================== TEXTS ========================
@@ -67,34 +73,52 @@ def help_command(update: Update, context: CallbackContext):
 
 def cat_fact(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
-    response = requests.get("https://catfact.ninja/fact").json()
-    update.message.reply_text(f"🐱 Cat Fact: {response['fact']}")
+    try:
+        response = requests.get("https://catfact.ninja/fact").json()
+        update.message.reply_text(f"🐱 Cat Fact: {response['fact']}")
+    except Exception as e:
+        logger.error(e)
+        update.message.reply_text("😿 Couldn't fetch cat fact.")
 
 def dog_pic(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
-    response = requests.get("https://dog.ceo/api/breeds/image/random").json()
-    update.message.reply_photo(response['message'])
+    try:
+        response = requests.get("https://dog.ceo/api/breeds/image/random").json()
+        update.message.reply_photo(response['message'])
+    except Exception as e:
+        logger.error(e)
+        update.message.reply_text("🐶 Couldn't fetch dog photo.")
 
 def bored(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
     try:
         response = requests.get("https://www.boredapi.com/api/activity").json()
         update.message.reply_text(f"🎲 Try this: {response['activity']}")
-    except:
-        update.message.reply_text("😞 Couldn't fetch an activity right now. Try again later.")
+    except Exception as e:
+        logger.error(e)
+        update.message.reply_text("😞 Couldn't fetch an activity.")
+
 def quote(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
-    response = requests.get("https://zenquotes.io/api/random").json()
-    quote = response[0]['q']
-    author = response[0]['a']
-    update.message.reply_text(f"💬 {quote}\n— {author}", parse_mode='Markdown')
+    try:
+        response = requests.get("https://zenquotes.io/api/random").json()
+        quote = response[0]['q']
+        author = response[0]['a']
+        update.message.reply_text(f"💬 {quote}\n— {author}", parse_mode='Markdown')
+    except Exception as e:
+        logger.error(e)
+        update.message.reply_text("💬 Couldn't fetch quote.")
 
 def poke(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
-    response = requests.get("https://pokeapi.co/api/v2/pokemon/pikachu").json()
-    name = response['name'].title()
-    types = ', '.join([t['type']['name'] for t in response['types']])
-    update.message.reply_text(f"🎮 Pokémon: {name}\nTypes: {types}", parse_mode='Markdown')
+    try:
+        response = requests.get("https://pokeapi.co/api/v2/pokemon/pikachu").json()
+        name = response['name'].title()
+        types = ', '.join([t['type']['name'] for t in response['types']])
+        update.message.reply_text(f"🎮 Pokémon: {name}\nTypes: {types}", parse_mode='Markdown')
+    except Exception as e:
+        logger.error(e)
+        update.message.reply_text("🎮 Couldn't fetch Pokémon info.")
 
 def country(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
@@ -103,17 +127,23 @@ def country(update: Update, context: CallbackContext):
         response = requests.get(f"https://restcountries.com/v3.1/name/{name}").json()[0]
         country_info = f"🌍 {response['name']['common']}\nCapital: {response['capital'][0]}\nRegion: {response['region']}\nPopulation: {response['population']}"
         update.message.reply_text(country_info, parse_mode='Markdown')
-    except:
+    except Exception as e:
+        logger.error(e)
         update.message.reply_text("❌ Couldn’t find that country. Try another.")
 
 def fake_user(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
-    response = requests.get("https://fakestoreapi.com/users/1").json()
-name = response['name']
-update.message.reply_text(
-    f"👤 {name['firstname']} {name['lastname']}\n📧 {response['email']}\n🏙️ {response['address']['city']}",
-    parse_mode='Markdown'
+    try:
+        response = requests.get("https://randomuser.me/api/").json()['results'][0]
+        name = response['name']
+        location = response['location']
+        update.message.reply_text(
+            f"👤 {name['first']} {name['last']}\n📧 {response['email']}\n🏙️ {location['city']}, {location['country']}",
+            parse_mode='Markdown'
         )
+    except Exception as e:
+        logger.error(e)
+        update.message.reply_text("👤 Couldn't fetch user profile.")
 
 # ======================== MENU ========================
 
@@ -161,6 +191,7 @@ def main():
     dp.add_handler(CommandHandler("user", fake_user))
     dp.add_handler(CallbackQueryHandler(button_handler))
 
+    logger.info("Bot started.")
     updater.start_polling()
     updater.idle()
 
