@@ -85,9 +85,9 @@ def bored(update: Update, context: CallbackContext):
 def quote(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
     response = requests.get("https://zenquotes.io/api/random").json()
-quote = response[0]['q']
-author = response[0]['a']
-update.message.reply_text(f"💬 {quote}\n— {author}", parse_mode='Markdown')
+    quote = response[0]['q']
+    author = response[0]['a']
+    update.message.reply_text(f"💬 {quote}\n— {author}", parse_mode='Markdown')
 
 def poke(update: Update, context: CallbackContext):
     send_typing_action(context, update.effective_chat.id)
