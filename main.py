@@ -4,7 +4,7 @@ import logging
 import requests
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.constants import ChatAction
+from telegram import ChatAction
 from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler
 
 # ======================== CONFIG ========================
