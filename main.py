@@ -1,7 +1,13 @@
 import os
 TOKEN = os.getenv("8185936093:AAFeVtgngoz_fKo0a6LY-tYl8s4x6qlKFnU")
 
-import time import logging from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup from telegram.constants import ChatAction from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler import requests
+import time
+import logging
+import requests
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.constants import ChatAction
+from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler
 
 Enable logging
 
