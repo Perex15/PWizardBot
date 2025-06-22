@@ -198,7 +198,7 @@ def main():
         listen="0.0.0.0",
         port=PORT,
         url_path=TOKEN,
-        webhook_url=f"https://pwizard-bot.onrender.com/{TOKEN}"
+        webhook_url=f"https://pwizardbot.onrender.com/{TOKEN}"
     )
 
 updater.idle()
