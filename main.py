@@ -192,8 +192,16 @@ def main():
     dp.add_handler(CallbackQueryHandler(button_handler))
 
     logger.info("Bot started.")
-    updater.start_polling()
-    updater.idle()
+    PORT = int(os.environ.get('PORT', '8443'))
+
+    updater.start_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        url_path=TOKEN,
+        webhook_url=f"https://pwizard-bot.onrender.com/{TOKEN}"
+    )
+
+updater.idle()
 
 if __name__ == '__main__':
     main()
