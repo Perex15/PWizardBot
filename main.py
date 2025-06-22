@@ -201,7 +201,5 @@ def main():
         webhook_url=f"https://pwizardbot.onrender.com/{TOKEN}"
     )
 
-updater.idle()
-
 if __name__ == '__main__':
     main()
