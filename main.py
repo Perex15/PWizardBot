@@ -10,7 +10,7 @@ from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQuery
 
 # ======================== CONFIG ========================
 TOKEN = os.getenv("TOKEN", "8185936093:AAFeVtgngoz_fKo0a6LY-tYl8s4x6qlKFnU")
-PORT = int(os.environ.get('PORT', '8443'))
+PORT = int(os.environ.get('PORT', '8442'))
 
 # Enable logging to file and console
 logging.basicConfig(
@@ -168,7 +168,7 @@ def main():
         listen="0.0.0.0",
         port=PORT,
         url_path=TOKEN,
-        webhook_url=f"https://pwizardbot.onrender.com/{TOKEN}"
+        webhook_url=f"https://pwizardbot-1.onrender.com/{TOKEN}"
     )
     updater.idle()
 
