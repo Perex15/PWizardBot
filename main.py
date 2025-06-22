@@ -2,34 +2,24 @@ import os
 import time
 import logging
 import requests
-import datetime
+import asyncio
 
-from telegram import (
-    Update,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    ReplyKeyboardMarkup,
-    ChatAction
-)
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ChatAction
 from telegram.ext import (
-    Updater,
-    CommandHandler,
-    CallbackContext,
-    CallbackQueryHandler,
-    MessageHandler,
-    filters,
+    ApplicationBuilder, CommandHandler, ContextTypes,
+    CallbackQueryHandler, MessageHandler, filters
 )
 
 # ======================== CONFIG ========================
 
 TOKEN = os.getenv("TOKEN", "8185936093:AAFeVtgngoz_fKo0a6LY-tYl8s4x6qlKFnU")
 
-# Logging to file
+# Logging to both file and console
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO,
     handlers=[
-        logging.FileHandler("pwizard_bot.log"),
+        logging.FileHandler("bot.log"),
         logging.StreamHandler()
     ]
 )
@@ -37,183 +27,170 @@ logger = logging.getLogger(__name__)
 
 # ======================== TEXTS ========================
 
-WELCOME_MESSAGE = "🤖 Welcome to *PWizard Bot!*"
+WELCOME_MESSAGE = "✫ Welcome to *PWizard Bot!*"
 INFO_MESSAGE = (
-    "✨ I can show you random fun facts, dog pics, motivational quotes, country details and more.\n\n"
+    "\n✨ I can show you random fun facts, dog pics, motivational quotes, country details and more.\n\n"
     "🧰 Try these commands:\n"
-    "• /catfact – Cat trivia 🐱\n"
-    "• /dog – Cute dog photo 🐶\n"
-    "• /bored – What to do? 🎲\n"
-    "• /quote – Inspiring quote 💬\n"
-    "• /poke – Pokémon profile 🎮\n"
-    "• /country <name> – Country details 🌍\n"
-    "• /user – Random profile 👤\n"
-    "• /ping – Check bot status 📡\n"
-    "• /help – How this bot works 📚\n\n"
-    "🔽 Use the menu below to explore."
+    "• Cat Fact 🐱\n"
+    "• Dog 🐶\n"
+    "• Bored 🎲\n"
+    "• Quote 💬\n"
+    "• Pokémon 🎮\n"
+    "• Country Info 🌍\n"
+    "• Fake User 👤\n"
+    "• Ping 📶\n"
 )
-HELP_TEXT = INFO_MESSAGE
 
-# ======================== MENUS ========================
-
-def main_menu():
-    keyboard = [
-        [InlineKeyboardButton("🐱 Cat Fact", callback_data="catfact"), InlineKeyboardButton("🐶 Dog", callback_data="dog")],
-        [InlineKeyboardButton("🎲 Bored", callback_data="bored"), InlineKeyboardButton("💬 Quote", callback_data="quote")],
-        [InlineKeyboardButton("🎮 Pokémon", callback_data="poke"), InlineKeyboardButton("🌍 Country Info", callback_data="country")],
-        [InlineKeyboardButton("👤 Fake User", callback_data="user")]
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-def bottom_menu():
-    keyboard = [
-        ["🐱 Cat Fact", "🐶 Dog"],
-        ["💬 Quote", "🎲 Bored"],
-        ["🎮 Pokémon", "🌍 Country"],
-        ["👤 Fake User", "📡 Ping", "📚 Help"]
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+HELP_TEXT = (
+    "\U0001F4DA *How to Use This Bot:*\n\n"
+    "Send any of the following keywords or use the menu:\n"
+    "• Cat Fact\n"
+    "• Dog\n"
+    "• Bored\n"
+    "• Quote\n"
+    "• Pokémon\n"
+    "• Country <name>\n"
+    "• Fake User\n"
+    "• Ping"
+)
 
 # ======================== UTILS ========================
 
-def send_typing_action(context: CallbackContext, chat_id: int):
-    context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    time.sleep(1)
+async def send_typing_action(context: ContextTypes.DEFAULT_TYPE, chat_id: int):
+    await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+    await asyncio.sleep(1)
 
-# ======================== COMMANDS ========================
+# ======================== COMMAND HANDLERS ========================
 
-def start(update: Update, context: CallbackContext):
-    chat_id = update.effective_chat.id
-    send_typing_action(context, chat_id)
-    update.message.reply_text(WELCOME_MESSAGE, parse_mode="Markdown")
-    time.sleep(1)
-    send_typing_action(context, chat_id)
-    update.message.reply_text(INFO_MESSAGE, parse_mode="Markdown", reply_markup=main_menu())
-    update.message.reply_text("👇 Choose an option below", reply_markup=bottom_menu())
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
+    await update.message.reply_text(WELCOME_MESSAGE, parse_mode='Markdown')
+    await send_typing_action(context, update.effective_chat.id)
+    await update.message.reply_text(INFO_MESSAGE, parse_mode='Markdown', reply_markup=main_menu())
 
-def help_command(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
-    update.message.reply_text(HELP_TEXT, parse_mode="Markdown")
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
+    await update.message.reply_text(HELP_TEXT, parse_mode='Markdown')
 
-def cat_fact(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
-    res = requests.get("https://catfact.ninja/fact").json()
-    update.message.reply_text(f"🐱 Cat Fact:\n{res['fact']}")
+async def cat_fact(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
+    response = requests.get("https://catfact.ninja/fact").json()
+    await update.message.reply_text(f"🐱 Cat Fact: {response['fact']}")
 
-def dog_pic(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
-    res = requests.get("https://dog.ceo/api/breeds/image/random").json()
-    update.message.reply_photo(res["message"])
+async def dog_pic(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
+    response = requests.get("https://dog.ceo/api/breeds/image/random").json()
+    await update.message.reply_photo(response['message'])
 
-def bored(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
+async def bored(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
     try:
-        res = requests.get("https://www.boredapi.com/api/activity").json()
-        update.message.reply_text(f"🎲 Try this: {res['activity']}")
+        response = requests.get("https://www.boredapi.com/api/activity").json()
+        await update.message.reply_text(f"🎲 Try this: {response['activity']}")
     except:
-        update.message.reply_text("😞 Couldn't fetch activity. Try again later.")
+        await update.message.reply_text("\ud83d\ude1e Couldn't fetch an activity right now. Try again later.")
 
-def quote(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
-    res = requests.get("https://zenquotes.io/api/random").json()
-    quote = res[0]['q']
-    author = res[0]['a']
-    update.message.reply_text(f"💬 {quote}\n— {author}", parse_mode="Markdown")
+async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
+    response = requests.get("https://zenquotes.io/api/random").json()
+    quote = response[0]['q']
+    author = response[0]['a']
+    await update.message.reply_text(f"💬 {quote}\n— {author}", parse_mode='Markdown')
 
-def poke(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
-    res = requests.get("https://pokeapi.co/api/v2/pokemon/pikachu").json()
-    name = res["name"].title()
-    types = ", ".join([t["type"]["name"] for t in res["types"]])
-    update.message.reply_text(f"🎮 Pokémon: {name}\nTypes: {types}")
+async def poke(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
+    response = requests.get("https://pokeapi.co/api/v2/pokemon/pikachu").json()
+    name = response['name'].title()
+    types = ', '.join([t['type']['name'] for t in response['types']])
+    await update.message.reply_text(f"🎮 Pokémon: {name}\nTypes: {types}", parse_mode='Markdown')
 
-def country(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
+async def country(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
     try:
-        name = " ".join(context.args)
-        res = requests.get(f"https://restcountries.com/v3.1/name/{name}").json()[0]
-        info = f"🌍 {res['name']['common']}\nCapital: {res['capital'][0]}\nRegion: {res['region']}\nPopulation: {res['population']}"
-        update.message.reply_text(info)
+        name = ' '.join(context.args)
+        response = requests.get(f"https://restcountries.com/v3.1/name/{name}").json()[0]
+        info = f"🌍 {response['name']['common']}\nCapital: {response['capital'][0]}\nRegion: {response['region']}\nPopulation: {response['population']}"
+        await update.message.reply_text(info, parse_mode='Markdown')
     except:
-        update.message.reply_text("❌ Couldn’t find that country. Try another.")
+        await update.message.reply_text("\u274c Couldn’t find that country. Try another.")
 
-def fake_user(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
-    res = requests.get("https://fakestoreapi.com/users/1").json()
-    name = res["name"]
-    update.message.reply_text(f"👤 {name['firstname']} {name['lastname']}\n📧 {res['email']}\n🏙️ {res['address']['city']}")
+async def fake_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
+    response = requests.get("https://fakestoreapi.com/users/1").json()
+    name = response['name']
+    await update.message.reply_text(
+        f"👤 {name['firstname']} {name['lastname']}\n📧 {response['email']}\n🏣 {response['address']['city']}",
+        parse_mode='Markdown')
 
-def ping(update: Update, context: CallbackContext):
-    send_typing_action(context, update.effective_chat.id)
-    now = datetime.datetime.utcnow()
-    update.message.reply_text(f"📡 Pong! Bot is alive.\nUTC Time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_typing_action(context, update.effective_chat.id)
+    start_time = time.time()
+    await update.message.reply_text("⏳ Pinging...")
+    latency = round((time.time() - start_time) * 1000)
+    await update.message.reply_text(f"🔌 Pong! Response Time: {latency}ms")
 
-# ======================== BUTTON HANDLER ========================
+# ======================== MENU ========================
 
-def button_handler(update: Update, context: CallbackContext):
+def main_menu():
+    keyboard = [
+        [InlineKeyboardButton("🐱 Cat Fact", callback_data='catfact'), InlineKeyboardButton("🐶 Dog", callback_data='dog')],
+        [InlineKeyboardButton("🎲 Bored", callback_data='bored'), InlineKeyboardButton("💬 Quote", callback_data='quote')],
+        [InlineKeyboardButton("🎮 Pokémon", callback_data='poke'), InlineKeyboardButton("🌍 Country Info", callback_data='country')],
+        [InlineKeyboardButton("👤 Fake User", callback_data='user'), InlineKeyboardButton("📶 Ping", callback_data='ping')]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    query.answer()
+    await query.answer()
     data = query.data
 
     command_map = {
-        "catfact": cat_fact,
-        "dog": dog_pic,
-        "bored": bored,
-        "quote": quote,
-        "poke": poke,
-        "country": lambda u, c: u.callback_query.message.reply_text("🌍 Use /country <name>"),
-        "user": fake_user
+        'catfact': cat_fact,
+        'dog': dog_pic,
+        'bored': bored,
+        'quote': quote,
+        'poke': poke,
+        'country': lambda u, c: u.callback_query.message.reply_text("🌍 Use /country <name> to get info."),
+        'user': fake_user,
+        'ping': ping
     }
 
     if data in command_map:
-        dummy_update = Update(update.update_id, message=query.message)
-        command_map[data](dummy_update, context)
+        dummy_update = Update(update.update_id, callback_query=query)
+        await command_map[data](update, context)
 
-# ======================== TEXT BUTTON HANDLER ========================
-
-def handle_menu_buttons(update: Update, context: CallbackContext):
-    text = update.message.text
-    mapping = {
-        "🐱 Cat Fact": cat_fact,
-        "🐶 Dog": dog_pic,
-        "💬 Quote": quote,
-        "🎲 Bored": bored,
-        "🎮 Pokémon": poke,
-        "🌍 Country": lambda u, c: u.message.reply_text("🌍 Use /country <name>"),
-        "👤 Fake User": fake_user,
-        "📚 Help": help_command,
-        "📡 Ping": ping
-    }
-
-    if text in mapping:
-        mapping[text](update, context)
+async def handle_menu_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text.lower()
+    match text:
+        case "cat fact": await cat_fact(update, context)
+        case "dog": await dog_pic(update, context)
+        case "bored": await bored(update, context)
+        case "quote": await quote(update, context)
+        case "pokémon": await poke(update, context)
+        case "ping": await ping(update, context)
+        case "fake user": await fake_user(update, context)
+        case _: await update.message.reply_text("❓ Unknown command. Use /help")
 
 # ======================== MAIN ========================
 
-def main():
-    updater = Updater(TOKEN)
-    dp = updater.dispatcher
+async def main():
+    app = ApplicationBuilder().token(TOKEN).build()
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("catfact", cat_fact))
-    dp.add_handler(CommandHandler("dog", dog_pic))
-    dp.add_handler(CommandHandler("bored", bored))
-    dp.add_handler(CommandHandler("quote", quote))
-    dp.add_handler(CommandHandler("poke", poke))
-    dp.add_handler(CommandHandler("country", country))
-    dp.add_handler(CommandHandler("user", fake_user))
-    dp.add_handler(CommandHandler("ping", ping))
-    dp.add_handler(CallbackQueryHandler(button_handler))
-    dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_menu_buttons))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("catfact", cat_fact))
+    app.add_handler(CommandHandler("dog", dog_pic))
+    app.add_handler(CommandHandler("bored", bored))
+    app.add_handler(CommandHandler("quote", quote))
+    app.add_handler(CommandHandler("poke", poke))
+    app.add_handler(CommandHandler("country", country))
+    app.add_handler(CommandHandler("user", fake_user))
+    app.add_handler(CommandHandler("ping", ping))
+    app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_menu_buttons))
 
-    updater.start_webhook(
-        listen="0.0.0.0",
-        port=PORT,
-        url_path=TOKEN,
-        webhook_url=f"https://pwizardbot.onrender.com/{TOKEN}"
-    )
-    updater.idle()
-    
+    await app.run_polling()
+
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
