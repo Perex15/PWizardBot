@@ -207,8 +207,13 @@ def main():
     dp.add_handler(CallbackQueryHandler(button_handler))
     dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_menu_buttons))
 
-    updater.start_polling()
+    updater.start_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        url_path=TOKEN,
+        webhook_url=f"https://pwizardbot.onrender.com/{TOKEN}"
+    )
     updater.idle()
-
+    
 if __name__ == '__main__':
     main()
