@@ -47,10 +47,10 @@ def send_typing_action(context: CallbackContext, chat_id: int):
 
 def get_reply_keyboard():
     return ReplyKeyboardMarkup([
-        [KeyboardButton("/catfact"), KeyboardButton("/dog")],
-        [KeyboardButton("/bored"), KeyboardButton("/quote")],
-        [KeyboardButton("/poke"), KeyboardButton("/ping")],
-        [KeyboardButton("/user"), KeyboardButton("/help")]
+        [KeyboardButton("Catfact \U0001F431"), KeyboardButton("Dog \U0001F436")],
+        [KeyboardButton("Bored \U0001F3B2"), KeyboardButton("Quote \U0001F4AC")],
+        [KeyboardButton("Poke \U0001F3AE"), KeyboardButton("Ping \U0001F4E1")],
+        [KeyboardButton("User \U0001F464"), KeyboardButton("Help \U0001F4DA")]
     ], resize_keyboard=True)
 
 def main_menu():
